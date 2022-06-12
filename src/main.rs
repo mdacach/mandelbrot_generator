@@ -132,3 +132,23 @@ fn test_pixel_to_point() {
         }
     );
 }
+
+fn render(
+    pixels: &mut [u8],
+    bounds: (usize, usize),
+    upper_left: Complex<f64>,
+    lower_right: Complex<f64>,
+) {
+    assert_eq!(pixels.len(), bounds.0 * bounds.1);
+
+    for row in 0..bounds.1 {
+        for column in 0..bounds.0 {
+            let point = pixel_to_point(bounds, (column, row), upper_left, lower_right);
+            let pixel_index = row * bounds.0 + column;
+            pixels[pixel_index] = match escape_time(point, 255) {
+                None => 0,                        // Black color
+                Some(count) => 255 - count as u8, // The bigger count is, the darker the color
+            };
+        }
+    }
+}
