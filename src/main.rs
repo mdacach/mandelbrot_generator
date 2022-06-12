@@ -1,5 +1,8 @@
+use std::fs::File;
 use std::str::FromStr;
 
+use image::png::PNGEncoder;
+use image::ColorType;
 use num::Complex;
 
 fn main() {
@@ -151,4 +154,19 @@ fn render(
             };
         }
     }
+}
+
+/// Write the buffer `pixels`, whose dimensions are given by `bounds`, to the
+/// file named `filename`
+fn write_image(
+    filename: &str,
+    pixels: &[u8],
+    bounds: (usize, usize),
+) -> Result<(), std::io::Error> {
+    let output = File::create(filename)?;
+
+    let encoder = PNGEncoder::new(output);
+    encoder.encode(pixels, bounds.0 as u32, bounds.1 as u32, ColorType::Gray(8))?;
+
+    Ok(())
 }
