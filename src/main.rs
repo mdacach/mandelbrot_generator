@@ -53,7 +53,7 @@ fn parse_pair<T: FromStr>(s: &str, separator: char) -> Option<(T, T)> {
             let right = &s[index + 1..];
             let right = T::from_str(right);
 
-            // We need both converions to have succeeded
+            // We need both conversions to have succeeded
             if let (Ok(left), Ok(right)) = (left, right) {
                 Some((left, right))
             } else {
