@@ -88,6 +88,15 @@ fn test_parse_pair() {
     assert_eq!(parse_pair::<f64>("0.5x1.5", 'x'), Some((0.5, 1.5)));
 }
 
+fn parse_complex(s: &str) -> Option<Complex<f64>> {
+    let pair = parse_pair(s, ',')?;
+
+    Some(Complex {
+        re: pair.0,
+        im: pair.1,
+    })
+}
+
 /// Given the row and column of a pixel in the output image, return the
 /// corresponding point on the complex plane.
 ///
