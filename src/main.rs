@@ -25,7 +25,8 @@ fn main() {
     let total_pixels = bounds.0 * bounds.1;
     let mut pixels = vec![0; total_pixels];
 
-    let threads = 8;
+    let threads = num_cpus::get();
+    println!("Running on {threads}");
     let rows_per_band = bounds.1 / threads + 1;
 
     {
