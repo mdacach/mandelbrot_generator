@@ -5,6 +5,7 @@ use std::str::FromStr;
 use image::png::PNGEncoder;
 use image::ColorType;
 use num::Complex;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -25,27 +26,23 @@ fn main() {
     let total_pixels = bounds.0 * bounds.1;
     let mut pixels = vec![0; total_pixels];
 
-    let threads = num_cpus::get();
-    println!("Running on {threads}");
-    let rows_per_band = bounds.1 / threads + 1;
-
+    // Now we let Rayon take care of the parallelism
+    // let threads = num_cpus::get();
+    // println!("Running on {threads}");
     {
-        let bands: Vec<&mut [u8]> = pixels.chunks_mut(rows_per_band * bounds.0).collect();
-        crossbeam::scope(|spawner| {
-            for (index, band) in bands.into_iter().enumerate() {
-                let top = rows_per_band * index;
-                let height = band.len() / bounds.0;
-                let band_bounds = (bounds.0, height);
-                let band_upper_left = pixel_to_point(bounds, (0, top), upper_left, lower_right);
-                let band_lower_right =
-                    pixel_to_point(bounds, (bounds.0, top + height), upper_left, lower_right);
+        // let bands: Vec<&mut [u8]> = pixels.chunks_mut(rows_per_band * bounds.0).collect();
+        let bands: Vec<(usize, &mut [u8])> = pixels.chunks_mut(bounds.0).enumerate().collect();
 
-                spawner.spawn(move |_| {
-                    render(band, band_bounds, band_upper_left, band_lower_right);
-                });
-            }
-        })
-        .unwrap();
+        bands.into_par_iter().for_each(|(i, band)| {
+            let top = i;
+            let width = bounds.0;
+            let height = 1;
+            let band_bounds = (width, height); // Just one row
+            let band_upper_left = pixel_to_point(bounds, (0, top), upper_left, lower_right);
+            let band_lower_right =
+                pixel_to_point(bounds, (width, top + height), upper_left, lower_right);
+            render(band, band_bounds, band_upper_left, band_lower_right);
+        });
     }
 
     write_image(&args[1], &pixels, bounds).expect("Error writing PNG file.");

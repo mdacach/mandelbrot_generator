@@ -209,6 +209,7 @@ dependencies = [
  "image",
  "num",
  "num_cpus",
+ "rayon",
 ]
 
 [[package]]
